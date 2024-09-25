@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile Page with Sidebar</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: nowrap;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background-color: #333;
+      width: 250px;
+      height: 100%;
+      position: fixed;
+      left: 0;
+      top: 0;
+      overflow: hidden;
+      transition: width 0.3s;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar ul li {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .sidebar ul li a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .sidebar ul li a:hover {
+      background-color: #575757;
+    }
+
+    .sidebar ul li i {
+      margin-right: 10px;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      width: 100%;
+      transition: margin-left 0.3s;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+    }
+
+    .menu-toggle {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px;
+      margin-right: 20px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .collapse-toggle {
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 0;
+        height: 100%;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .menu-toggle {
+        display: inline-block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+      <ul>
+        <li><a href="#dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+        <li><a href="#profile"><i class="fas fa-user"></i> Profile</a></li>
+        <li><a href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
+        <li><a href="#logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        <li><button class="collapse-toggle" id="collapse-toggle">&#x25B6;</button></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <header>
+        <button id="menu-toggle" class="menu-toggle">&#9776;</button>
+        <h1>Profile Page</h1>
+      </header>
+      <section id="dashboard" class="section">
+        <h2>Dashboard</h2>
+        <p>Your dashboard content here...</p>
+      </section>
+      <section id="profile" class="section">
+        <h2>Profile</h2>
+        <p>Your profile details here...</p>
+      </section>
+      <section id="settings" class="section">
+        <h2>Settings</h2>
+        <p>Your settings options here...</p>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Toggle sidebar on mobile
+    const sidebar = document.getElementById("sidebar");
+    const menuToggle = document.getElementById("menu-toggle");
+    const collapseToggle = document.getElementById("collapse-toggle");
+
+    menuToggle.addEventListener("click", function() {
+      if (sidebar.style.width === "250px") {
+        sidebar.style.width = "0";
+      } else {
+        sidebar.style.width = "250px";
+      }
+    });
+
+    collapseToggle.addEventListener("click", function() {
+      if (sidebar.style.width === "250px") {
+        sidebar.style.width = "80px"; // Adjust width for collapsed state
+        collapseToggle.innerHTML = '&#x25C0;'; // Change icon to indicate expand
+      } else {
+        sidebar.style.width = "250px";
+        collapseToggle.innerHTML = '&#x25B6;'; // Change icon to indicate collapse
+      }
+    });
+  </script>
+</body>
+</html>
+
+

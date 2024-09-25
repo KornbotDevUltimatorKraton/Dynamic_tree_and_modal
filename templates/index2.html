@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folder Tree View with jsTree</title>
+  
+  <!-- Include jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  <!-- Include jsTree CSS and JS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #folderTree {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Folder Tree View</h1>
+  
+  <!-- Store JSON data from Flask inside a <script> tag -->
+  <script id="jsonData" type="application/json">
+    {{ json_data | tojson }}
+  </script>
+
+  <div id="folderTree"></div>
+  
+  <script>
+    // Convert JSON structure to jsTree format
+    function convertToJsTreeFormat(data) {
+      function traverse(node) {
+        const result = [];
+
+        Object.keys(node).forEach(key => {
+          const value = node[key];
+          if (typeof value === 'object') {
+            // If value is an object, it's a folder
+            result.push({
+              id: key,
+              text: key,
+              children: traverse(value)  // Recursively convert children
+            });
+          } else if (typeof value === 'string') {
+            // If value is a string, it's a file
+            result.push({
+              id: key + '-' + value,
+              text: `${key} -> ${value}`,  // Combine pdf -> glb
+              icon: 'jstree-file'
+            });
+          }
+        });
+
+        return result;
+      }
+
+      return traverse(data);
+    }
+
+    $(document).ready(function() {
+      // Get the JSON data from the script tag
+      const jsonRaw = document.getElementById('jsonData').textContent;
+      console.log("Raw JSON data: ", jsonRaw);  // Print raw JSON to debug
+
+      try {
+        const jsonData = JSON.parse(jsonRaw);
+        console.log("Parsed JSON data: ", jsonData);
+
+        // Convert the JSON to jsTree format
+        const jsTreeData = convertToJsTreeFormat(jsonData);
+
+        // Initialize jsTree
+        $('#folderTree').jstree({
+          'core': {
+            'data': jsTreeData
+          }
+        });
+
+        // Event listener for folder/file click
+        $('#folderTree').on("select_node.jstree", function (e, data) {
+          const selectedNode = data.node;
+          alert("You selected: " + selectedNode.text);
+        });
+      } catch (error) {
+        console.error("JSON parsing error: ", error);
+      }
+    });
+  </script>
+  
+</body>
+</html>

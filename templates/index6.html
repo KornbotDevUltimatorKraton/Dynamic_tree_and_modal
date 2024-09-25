@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Folder Tree with Modal Pop-up</title>
+  <input type="hidden" id="email" value="{{userdata}}">
+  <input type="hidden" id="encode_jwt" value="{{encodejwt}}"> 
+  <!-- Include jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  <!-- Include jsTree CSS and JS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/themes/default/style.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.12/jstree.min.js"></script>
+
+  <!-- Include Bootstrap CSS for the modal -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+   
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #folderTree {
+      margin-top: 20px;
+    }
+    .modal-dialog {
+      max-width: 80%;
+    }
+    .modal-body {
+      height: 500px;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Folder Tree with Modal Pop-up</h1>
+  
+  <!--<button id="refreshTree">Fetch and Refresh Tree</button>-->
+  
+  <div id="folderTree"></div>
+
+  <!-- Modal Pop-up -->
+  <div class="modal fade" id="modelViewerModal" tabindex="-1" role="dialog" aria-labelledby="modelViewerModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modelViewerModalLabel">3D Model Viewer</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- You can embed Three.js or iframe here later -->
+          <p id="selectedFile">Selected file will be shown here for now.</p>
+          <button type="button" onclick="delete_select();">Delete</button>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    //Get the value element of the email from the arguement 
+    var email = document.getElementById('email').value; 
+    var docmatch = {};
+    // Convert JSON structure to jsTree format
+    function convertToJsTreeFormat(data) {
+      function traverse(node) {
+        const result = [];
+
+        Object.keys(node).forEach(key => {
+          const value = node[key];
+          if (typeof value === 'object') {
+            // If value is an object, it's a folder
+            result.push({
+              id: key,
+              text: key,
+              children: traverse(value)  // Recursively convert children
+            });
+          } else if (typeof value === 'string') {
+            // If value is a string, it's a file
+            result.push({
+              id: key + '-' + value,
+              text: `${key} -> ${value}`,  // Combine pdf -> glb
+              icon: 'jstree-file'
+            });
+          }
+        });
+
+        return result;
+      }
+
+      return traverse(data);
+    }
+
+    // Initialize jsTree
+    function initializeJsTree(jsTreeData) {
+      $('#folderTree').jstree('destroy').empty();  // Destroy previous tree and empty the div
+      $('#folderTree').jstree({
+        'core': {
+          'data': jsTreeData
+        }
+      });
+    }
+
+    // Fetch new JSON data from Flask back-end and update tree
+    function fetchAndRefreshTree() {
+      fetch('/get-json')
+        .then(response => response.json())
+        .then(jsonData => {
+          console.log("Fetched JSON data: ", jsonData[email]);
+          
+          const jsTreeData = convertToJsTreeFormat(jsonData[email]);
+          initializeJsTree(jsTreeData);
+        })
+        .catch(error => console.error("Error fetching JSON data: ", error));
+    }
+
+    $(document).ready(function() {
+      // Fetch initial tree data (from inline script or API if desired)
+      fetchAndRefreshTree();
+
+      // Bind refresh button to fetch and refresh tree
+      $('#refreshTree').on('click', function() {
+        fetchAndRefreshTree();
+      });
+
+      // Function to get the full path of the selected node
+      function getFullPath(node) {
+        let path = node.text;
+        let currentNode = node;
+         
+        // Traverse up the tree to the root to build the full path
+        while (currentNode.parent !== "#") {
+          currentNode = $('#folderTree').jstree(true).get_node(currentNode.parent);
+          path = currentNode.text + "/" + path;
+        }
+
+        return path;
+      }
+
+      // Event listener for folder/file click
+      $('#folderTree').on("select_node.jstree", function (e, data) {
+        const selectedNode = data.node;
+        const fullPath = getFullPath(selectedNode);
+
+        // Check if the node has children - if so, it's a folder, otherwise it's a file
+        if (selectedNode.children.length > 0) {
+          console.log("You selected a folder:", fullPath);
+        } else {
+          console.log("You selected a file:", fullPath);
+          docmatch['docmatch'] = fullPath
+          // Show modal with the full path of the file
+          $('#selectedFile').text("Selected file: " + fullPath);
+          $('#modelViewerModal').modal('show');
+        }
+      });
+    });
+    
+    function delete_select(){
+          console.log("Fetching delete the components ");
+          //Send the document matching data to delete matching at the back-end 
+          fetch('/delete_docmatching', {
+                              // Declare what type of data we're sending
+                              headers: {
+                              'Content-Type': 'application/json'
+                            },
+                           // Specify the method
+                           method: 'POST',
+                          // A JSON payload
+                          body: JSON.stringify({
+
+                                   "email": email,"payload":docmatch     
+                          })
+                          }).then(function (response) { // At this point, Flask has printed our JSON
+                          return response.text();
+                          }).then(function (text) {
+                          console.log('POST response: ');
+                          var delete_docmatch = JSON.parse(text);
+                          console.log("Deleting the docmatch path",delete_docmatch);   
+                        
+        });
+          location.reload();           
+    }
+
+  </script>
+  
+</body>
+</html>

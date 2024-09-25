@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resizable Modal with Dynamic iFrame</title>
+  <style>
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      position: relative;
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden; /* Ensure content stays within modal bounds */
+    }
+
+    /* Close button styling */
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    /* iFrame should fill the entire modal content area */
+    iframe {
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- Trigger buttons -->
+ <!-- <button onclick="openModal('https://roboreactor.com/motion_control/eyJlbWFpbCI6Imtvcm5ib3QzODBAaG90bWFpbC5jb20iLCJwcm9qZWN0X25hbWUiOiJTbWFydF9Sb2JvdHMifQ==','900','500')">Open Modal with Example</button>-->
+ 
+  <!-- Modal -->
+  <div id="resizableModal" class="modal">
+    <div id="modalContent" class="modal-content" style="width: 70%; height: 70%;">
+      <span class="close-btn" onclick="closeModal()">×</span>
+      <!-- iFrame inside the modal content -->
+      <iframe id="dynamicIframe" src=""></iframe>
+    </div>
+  </div>
+
+  <script>
+    openModal('https://roboreactor.com/motion_control/eyJlbWFpbCI6Imtvcm5ib3QzODBAaG90bWFpbC5jb20iLCJwcm9qZWN0X25hbWUiOiJTbWFydF9Sb2JvdHMifQ==','900','500')
+    setTimeout(function() {
+      console.log("This runs after a 2-second delay.");
+      closeModal();   
+  }, 5000);
+   
+    // Function to open the modal and set the iFrame source dynamically
+    function openModal(url,x,y) {
+      resizeModal(x, y)
+      const modal = document.getElementById("resizableModal");
+      const iframe = document.getElementById("dynamicIframe");
+      
+      // Set the iframe src dynamically
+      iframe.src = url;
+      
+      // Open the modal
+      modal.style.display = "flex";
+
+    }
+
+    // Function to close the modal
+    function closeModal() {
+      const modal = document.getElementById("resizableModal");
+      modal.style.display = "none";
+    }
+
+    // Function to resize the modal content and adjust iframe size proportionally
+    function resizeModal(width, height) {
+      const modalContent = document.getElementById("modalContent");
+
+      // Set the modal content size
+      modalContent.style.width = width + "px";
+      modalContent.style.height = height + "px";
+    }
+  </script>
+</body>
+</html>
+
